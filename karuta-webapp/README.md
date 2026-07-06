@@ -27,6 +27,13 @@ npm install
 npm run dev
 ```
 
+### Setup the DB
+
+```bash
+pnpm dlx prisma generate
+pnpm dlx prisma migrate
+```
+
 ## License
 
 Licensed under the [MIT license](https://github.com/heroui-inc/next-app-template/blob/main/LICENSE).
