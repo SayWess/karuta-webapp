@@ -1,17 +1,22 @@
-// app/signup/page.tsx
+"use client";
 import { signUpAction } from "@/app/actions/auth";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { authClient } from "@/lib/auth-client";
 import { redirect } from "next/navigation";
+import { useActionState } from "react";
 
-export default async function SignUp() {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
+export default function SignUp() {
+    const {
+        data: session,
+        isPending, //loading state
+        error, //error object
+        refetch, //refetch the session
+    } = authClient.useSession();
 
     if (session) {
         redirect("/");
     }
+
+    const [state, action, pending] = useActionState(signUpAction, undefined);
 
     return (
         <div className="flex min-h-full flex-1 items-center justify-center px-4 py-12">
@@ -25,7 +30,12 @@ export default async function SignUp() {
                     </p>
                 </div>
 
-                <form action={signUpAction} className="space-y-5">
+                <form action={action} className="space-y-5">
+                    {state?.message && (
+                        <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                            {state.message}
+                        </div>
+                    )}
                     <div>
                         <label
                             htmlFor="name"
@@ -43,6 +53,7 @@ export default async function SignUp() {
                             placeholder="Jane Doe"
                         />
                     </div>
+                    {state?.errors?.name && <p>{state.errors.name}</p>}
 
                     <div>
                         <label
@@ -61,6 +72,7 @@ export default async function SignUp() {
                             placeholder="you@example.com"
                         />
                     </div>
+                    {state?.errors?.email && <p>{state.errors.email}</p>}
 
                     <div>
                         <label
@@ -83,9 +95,20 @@ export default async function SignUp() {
                             At least 8 characters.
                         </p>
                     </div>
+                    {state?.errors?.password && (
+                        <div>
+                            <p>Password must:</p>
+                            <ul>
+                                {state.errors.password.map((error) => (
+                                    <li key={error}>- {error}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
 
                     <button
                         type="submit"
+                        disabled={pending}
                         className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
                     >
                         Create account
