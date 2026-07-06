@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Button, Kbd, Link, TextField, InputGroup } from "@heroui/react";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import NextLink from "next/link";
 import clsx from "clsx";
 
@@ -13,17 +13,19 @@ import { authClient } from "@/lib/auth-client";
 
 export function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const pathname = usePathname();
+    const { data: session, isPending, refetch } = authClient.useSession();
 
-    const signoutItem = siteConfig.navMenuItems.at(
-        siteConfig.navMenuItems.length - 1,
-    );
+    useEffect(() => {
+        void refetch();
+    }, [pathname, refetch]);
 
-    const {
-        data: session,
-        isPending, //loading state
-        error, //error object
-        refetch, //refetch the session
-    } = authClient.useSession();
+    const authLinks = session
+        ? [{ label: "Logout", href: "/logout" }]
+        : [
+              { label: "Login", href: "/login" },
+              { label: "Register", href: "/register" },
+          ];
 
     return (
         <nav className="sticky top-0 z-40 w-full border-b border-separator bg-background/70 backdrop-blur-lg">
@@ -31,39 +33,52 @@ export function Navbar() {
                 <div className="flex items-center gap-4">
                     <NextLink className="flex items-center gap-1" href="/">
                         <Logo />
-                        <p className="font-bold text-inherit">ACME</p>
+                        <p className="font-bold text-inherit">KARUTA</p>
                     </NextLink>
                     <ul className="hidden lg:flex gap-4 ml-2">
-                        {siteConfig.navItems.map((item) => (
-                            <li key={item.href}>
+                        {siteConfig.navItems.map((item) => {
+                            const isActive =
+                                item.href === "/"
+                                    ? pathname === "/"
+                                    : pathname.startsWith(item.href);
+
+                            return (
+                                <li key={item.href}>
+                                    <NextLink
+                                        className={clsx(
+                                            "text-foreground hover:text-accent transition-colors",
+                                            "data-[active=true]:text-accent data-[active=true]:font-medium",
+                                            isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                                        )}
+                                        href={item.href}
+                                    >
+                                        {item.label}
+                                    </NextLink>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
+
+                <div className="hidden sm:flex items-center gap-2">
+                    {!isPending && (
+                        <div className="flex items-center gap-2">
+                            {authLinks.map((item) => (
                                 <NextLink
+                                    key={item.href}
                                     className={clsx(
-                                        "text-foreground hover:text-accent transition-colors",
-                                        "data-[active=true]:text-accent data-[active=true]:font-medium",
+                                        "rounded-full px-3 py-2 text-sm font-medium text-foreground transition-colors hover:text-accent",
+                                        item.href === "/logout" &&
+                                            "text-danger hover:text-danger/80",
                                     )}
                                     href={item.href}
                                 >
                                     {item.label}
                                 </NextLink>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-
-                <div className="hidden sm:flex items-center gap-2">
-                    {session && signoutItem && (
-                        <NextLink
-                            className={clsx(
-                                "text-foreground hover:text-accent transition-colors",
-                                "data-[active=true]:text-accent data-[active=true]:font-medium",
-                            )}
-                            href={signoutItem.href}
-                        >
-                            {signoutItem.label}
-                        </NextLink>
+                            ))}
+                        </div>
                     )}
                     <ThemeSwitch />
-                    {/* <div className="hidden lg:flex">{searchInput}</div> */}
                 </div>
 
                 <div className="flex sm:hidden items-center gap-2">
@@ -102,27 +117,39 @@ export function Navbar() {
 
             {isMenuOpen && (
                 <div className="border-t border-separator sm:hidden">
-                    {/* <div className="p-4">{searchInput}</div> */}
-                    <ul className="flex flex-col gap-2 px-4 pb-4">
-                        {siteConfig.navMenuItems.map((item, index) => (
-                            <li key={`${item.label}-${index}`}>
-                                <Link
-                                    className={clsx(
-                                        "block py-2 text-lg no-underline",
-                                        index === 2
-                                            ? "text-accent"
-                                            : index ===
-                                                siteConfig.navMenuItems.length -
-                                                    1
-                                              ? "text-danger"
-                                              : "text-foreground",
-                                    )}
-                                    href="#"
+                    <ul className="flex flex-col gap-2 px-4 py-4">
+                        {siteConfig.navItems.map((item) => (
+                            <li key={item.href}>
+                                <NextLink
+                                    className="block rounded-2xl px-4 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted/60 hover:text-accent"
+                                    href={item.href}
                                 >
                                     {item.label}
-                                </Link>
+                                </NextLink>
                             </li>
                         ))}
+                        <li className="pt-2">
+                            <div className="rounded-2xl border border-border bg-card/80 p-2">
+                                {isPending ? (
+                                    <div className="h-11 rounded-xl bg-muted/60" />
+                                ) : (
+                                    authLinks.map((item) => (
+                                        <NextLink
+                                            key={item.href}
+                                            className={clsx(
+                                                "block rounded-xl px-4 py-3 text-base font-medium transition-colors",
+                                                item.href === "/logout"
+                                                    ? "text-danger hover:bg-danger/10"
+                                                    : "text-foreground hover:bg-muted/60 hover:text-accent",
+                                            )}
+                                            href={item.href}
+                                        >
+                                            {item.label}
+                                        </NextLink>
+                                    ))
+                                )}
+                            </div>
+                        </li>
                     </ul>
                 </div>
             )}
