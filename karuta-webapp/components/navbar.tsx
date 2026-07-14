@@ -27,6 +27,10 @@ export function Navbar() {
               { label: "Register", href: "/register" },
           ];
 
+    if (pathname.startsWith("/game")) {
+        return;
+    }
+
     return (
         <nav className="sticky top-0 z-40 w-full border-b border-separator bg-background/70 backdrop-blur-lg">
             <header className="mx-auto flex h-16 max-w-[1280px] items-center justify-between gap-4 px-6">

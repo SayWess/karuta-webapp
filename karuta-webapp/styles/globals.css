@@ -7,3 +7,12 @@
 	--font-sans: "font", sans-serif;
 	--font-mono: "monospace", monospace;
 }
+
+/* .karuta-card:hover,
+.karuta-card:focus-within {
+	transform: scale(2.3);
+} */
+
+.card-container:hover {
+	z-index: 40;
+}
