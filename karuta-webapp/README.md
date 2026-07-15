@@ -13,6 +13,13 @@
 
 ## How to Use
 
+nvm use 22
+npm install -g pnpm      # si pas encore installé
+cp .env.example .env     # ou créer .env manuellement avec DATABASE_URL
+pnpm install
+pnpm prisma migrate dev
+npm run dev
+
 ### Install dependencies
 
 You can use one of them `npm`, `yarn`, `pnpm`, `bun`, Example using `npm`:

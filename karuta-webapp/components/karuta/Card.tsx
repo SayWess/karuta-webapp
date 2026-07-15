@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Card as HeroCard } from "@heroui/react";
 import type { KarutaCard } from "@/lib/karuta/types";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface CardProps {
     card: KarutaCard;
@@ -45,6 +45,24 @@ export function Card({
               }
             : ({} as React.CSSProperties);
 
+    const [hovered, setHovered] = useState(false);
+    const [shiftHeld, setShiftHeld] = useState(false);
+
+    useEffect(() => {
+      const onKeyDown = (e: KeyboardEvent) => { if (e.key === "Shift") setShiftHeld(true); };
+      const onKeyUp   = (e: KeyboardEvent) => { if (e.key === "Shift") setShiftHeld(false); };
+
+      window.addEventListener("keydown", onKeyDown);
+      window.addEventListener("keyup",   onKeyUp);
+      return () => {
+        window.removeEventListener("keydown", onKeyDown);
+        window.removeEventListener("keyup",   onKeyUp);
+      };
+    }, []);
+
+    const zoomed = hovered && shiftHeld;
+
+
     return (
         <motion.div
             layoutId={card.id}
@@ -55,6 +73,8 @@ export function Card({
                 containerType: "inline-size",
                 ...cardSize,
             }}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
             whileHover={interactive ? { y: -8 } : undefined}
             whileFocus={interactive ? { y: -8 } : undefined}
             transition={{
@@ -117,11 +137,15 @@ export function Card({
                             width={816}
                             height={1110}
                             quality={100}
+                            unoptimized
                             className="h-full w-full object-cover"
                             draggable={false}
                             style={{
                                 perspective: 800,
                                 containerType: "inline-size",
+                                transform: zoomed ? "scale(2.3)" : "scale(1)",
+                                transition: "transform 0.2s ease",
+                                transformOrigin: "center",
                                 ...cardSize,
                             }}
                         />
