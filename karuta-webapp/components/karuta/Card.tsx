@@ -49,19 +49,22 @@ export function Card({
     const [shiftHeld, setShiftHeld] = useState(false);
 
     useEffect(() => {
-      const onKeyDown = (e: KeyboardEvent) => { if (e.key === "Shift") setShiftHeld(true); };
-      const onKeyUp   = (e: KeyboardEvent) => { if (e.key === "Shift") setShiftHeld(false); };
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Shift") setShiftHeld(true);
+        };
+        const onKeyUp = (e: KeyboardEvent) => {
+            if (e.key === "Shift") setShiftHeld(false);
+        };
 
-      window.addEventListener("keydown", onKeyDown);
-      window.addEventListener("keyup",   onKeyUp);
-      return () => {
-        window.removeEventListener("keydown", onKeyDown);
-        window.removeEventListener("keyup",   onKeyUp);
-      };
+        window.addEventListener("keydown", onKeyDown);
+        window.addEventListener("keyup", onKeyUp);
+        return () => {
+            window.removeEventListener("keydown", onKeyDown);
+            window.removeEventListener("keyup", onKeyUp);
+        };
     }, []);
 
     const zoomed = hovered && shiftHeld;
-
 
     return (
         <motion.div
@@ -100,7 +103,11 @@ export function Card({
                     rotateY: faceDown ? 0 : 180,
                     rotateZ: rotated ? 180 : 0,
                 }}
-                whileHover={interactive ? { y: rightClickZoomed ? "-50%" : -4 } : undefined}
+                whileHover={
+                    interactive
+                        ? { y: rightClickZoomed || zoomed ? "-50%" : -4 }
+                        : undefined
+                }
                 whileTap={interactive ? { scale: 0.96 } : undefined}
                 transition={{
                     rotateY: { duration: 0.45, ease: "easeInOut" },
@@ -129,7 +136,10 @@ export function Card({
                         className="h-full w-full"
                         animate={{ scale: rightClickZoomed ? 2.3 : 1 }}
                         transition={{ type: "tween", duration: 0.15 }}
-                        style={{ transformOrigin: "center center", willChange: "transform" }}
+                        style={{
+                            transformOrigin: "center center",
+                            willChange: "transform",
+                        }}
                     >
                         <Image
                             src={card.imageUrl}
